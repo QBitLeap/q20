@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 import platform
 import shutil
-import struct
 import subprocess
 import sys
 import sysconfig
@@ -32,10 +31,7 @@ def package(output):
         icon = ROOT / "assets/platform-icons" / (system + ".png")
         options = []
         if system == "windows":
-            png = icon.read_bytes()
-            ico = work / "q20.ico"
-            ico.write_bytes(struct.pack("<HHHBBBBHHII", 0, 1, 1, 0, 0, 0, 0, 1, 32, len(png), 22) + png)
-            options = ["--icon", str(ico)]
+            options = ["--icon", str(ROOT / "assets/platform-icons/windows.ico")]
         environment = dict(os.environ, PYINSTALLER_CONFIG_DIR=str(work / "cache"))
         subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--onedir", "--name", "q20",
             "--paths", str(ROOT), "--distpath", str(work / "dist"), "--workpath", str(work / "build"),

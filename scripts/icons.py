@@ -1,6 +1,7 @@
 """Generate the same 50% platform marks and full-square Testnet4 cone as the suite."""
 
 from pathlib import Path
+import struct
 import subprocess
 import xml.etree.ElementTree as ET
 
@@ -47,6 +48,11 @@ def generate():
             svg.write_text(text[:text.rfind("</svg>")] + "".join(overlays) + "</svg>\n")
             subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", "-o", destination / (name + ".png"), svg], check=True)
     (ROOT / "q20/static/icon.svg").write_text(text)
+    # ICO directory dimensions are capped at 256; keep the embedded PNG consistent.
+    icon_png = destination / "windows-256.png"
+    subprocess.run(["rsvg-convert", "-w", "256", "-h", "256", "-o", icon_png, destination / "windows.svg"], check=True)
+    png = icon_png.read_bytes()
+    (destination / "windows.ico").write_bytes(struct.pack("<HHHBBBBHHII", 0, 1, 1, 0, 0, 0, 0, 1, 32, len(png), 22) + png)
 
 
 if __name__ == "__main__":
