@@ -28,6 +28,8 @@ replay parity remain separate checks. Testnet4 activation rules remain unaccepte
 
 The `Accepted Umbrel image release` workflow verifies the archived native image,
 checks it against the currently published Core/gateway and publishes those exact
-image bytes only after the isolated checks pass. Publication does not make a new
-GHCR package anonymously readable automatically; the community catalog requires
-an anonymous pull check before promotion.
+image bytes only after the isolated checks pass. The [published image receipt](published-image-0.1.1.json) records the immutable
+registry digest and successful anonymous manifest/configuration verification.
+The [CI integration receipt](community-integration-0.1.1.json) records the real
+Core/gateway checks against the current published dependencies. The community
+catalog also runs an anonymous Docker pull and isolated integration before promotion.
