@@ -4,7 +4,11 @@ The q20 app depends on its chosen Qbit Core app and owns its persistent index.
 It uses the existing authenticated Core read gateway; it receives no wallet key
 or Core cookie. Indexing starts automatically after installation.
 
-After native Linux tests and image manifest verification, generate a package:
+For installation, refresh the existing [QBitLeap community app store](https://github.com/QBitLeap/umbrel-app-store)
+and install **q20 Indexer 0.1.1**. Keep Qbit Core running; indexing starts
+automatically. No terminal setup or website connection is required.
+
+For maintainers generating a separate candidate after native tests:
 
 ```sh
 python3 scripts/package_umbrel.py /path/to/new/qbitleap-q20-main \

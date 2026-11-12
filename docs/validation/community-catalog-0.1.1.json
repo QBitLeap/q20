@@ -1,0 +1,17 @@
+{
+  "version": "0.1.1",
+  "communityCatalogPublished": true,
+  "store": "https://github.com/QBitLeap/umbrel-app-store",
+  "catalogCommit": "820cef9054eabf8b2715cda5b5035876ad30eaed",
+  "workflowUrl": "https://github.com/QBitLeap/umbrel-app-store/actions/runs/43174716821",
+  "appId": "qbitleap-q20-main",
+  "appName": "q20 Indexer",
+  "sourceCommit": "df2b5d23c6804051d9ce28c4f66faf7ff36a26eb",
+  "image": "ghcr.io/qbitleap/q20@sha256:3ef20bbaaafa355c2cdeeeadb4f3c74695156d8d189b839a5ae6764ca24d9de8",
+  "imageId": "sha256:0c1d5ce05023985360e4d92cd9fb12e2e0f36b59b327f4ad81be02c22bca9c1e",
+  "anonymousImagePullAndIntegrationPassed": true,
+  "dependencyExportsAccepted": true,
+  "otherEightAppPackagesUnchanged": true,
+  "managedInstallationAccepted": false,
+  "realChainParityAccepted": false
+}

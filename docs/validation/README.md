@@ -33,3 +33,10 @@ registry digest and successful anonymous manifest/configuration verification.
 The [CI integration receipt](community-integration-0.1.1.json) records the real
 Core/gateway checks against the current published dependencies. The community
 catalog also runs an anonymous Docker pull and isolated integration before promotion.
+
+The [community catalog receipt](community-catalog-0.1.1.json) records successful
+anonymous Docker pull, isolated integration and all dependency export contexts.
+The existing QBitLeap community store now includes **q20 Indexer 0.1.1**.
+Refresh that store in Umbrel and install q20 Indexer with Qbit Core running;
+Mainnet indexing starts automatically. Managed installation and live-chain
+parity remain unverified until checked on the installed app.

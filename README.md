@@ -18,6 +18,9 @@ Core. It holds no wallet keys and does not sign or broadcast transactions.
 | Linux | [ARM64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-linux-arm64.tar.gz) · [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-linux-x64.tar.gz) |
 | Umbrel | [QBitLeap community app store](https://github.com/QBitLeap/umbrel-app-store) · Mainnet package |
 
+For Umbrel, refresh the existing QBitLeap community store and install **q20 Indexer 0.1.1**.
+Keep Qbit Core running; Mainnet indexing starts automatically.
+
 Use the release checksums before running downloaded artifacts. Native package
 checks, isolated Core integration, managed installation and real-chain parity
 are recorded separately in the [validation findings](docs/validation/README.md).
