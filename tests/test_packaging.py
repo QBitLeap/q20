@@ -24,8 +24,20 @@ class PackagingTests(unittest.TestCase):
             service = compose["services"]["q20"]
             self.assertFalse(any("auth" in v or "core:" in v or "docker.sock" in v for v in service["volumes"]))
             self.assertNotIn("QBIT_WALLET_ENABLED", service["environment"])
+            self.assertIn('app-qbitleap-q20-main-seed-read-api', (destination/'exports.sh').read_text())
             with self.assertRaises(ValueError):
                 module.package(destination, "registry.example/q20:latest")
+
+    def test_private_candidate_keeps_icon_local_without_public_repository_links(self):
+        spec=importlib.util.spec_from_file_location('q20_private_package',ROOT/'scripts/package_umbrel.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory:
+            destination=Path(directory)/'app'
+            module.package(destination,'127.0.0.1:53292/q20@sha256:'+'1'*64,private=True)
+            manifest=json.loads((destination/'umbrel-app.yml').read_text())
+            self.assertTrue(manifest['icon'].startswith('data:image/svg+xml;base64,'))
+            self.assertEqual((manifest['repo'],manifest['support']),('',''))
+            self.assertEqual(manifest['version'],'0.1.1')
 
     def test_platform_marks_and_large_testnet_cones(self):
         svg = "{http://www.w3.org/2000/svg}"

@@ -1,0 +1,51 @@
+{
+  "passed": true,
+  "sourceId": "59106cb6836ec8beef7c00f6398b0fa3b771c84f69d297e432c56b77c9021242",
+  "recordType": "Owner-reported isolated Linux amd64 acceptance, 2026-11-12; selected non-operational fields",
+  "platform": "linux-amd64",
+  "q20ImageId": "sha256:0c1d5ce05023985360e4d92cd9fb12e2e0f36b59b327f4ad81be02c22bca9c1e",
+  "q20ImageArchiveSha256": "dbcd40a2aa2be87c03c30c92e9a8c527641cb856c198f9eb7bea979063b9156f",
+  "networks": {
+    "main": {
+      "passed": true,
+      "protocols": {
+        "q20": {
+          "app": "q20",
+          "available": true,
+          "network": "mainnet",
+          "protocol": "qbit-20",
+          "version": "0.1.1",
+          "indexHeight": 0,
+          "indexHash": "0000000000004d60aa5d46013991d0a0e2995d89ee98e53068ae196d763e79f2",
+          "rules": "q20-qbit20-v1.2-listings-v5r2-20261111",
+          "rulesFingerprint": "273ee09c9c5eae7c490fd594c58417baf9b78f9b35e15a1a2f1ca1fdd6d9cde6",
+          "observedSynchronized": false,
+          "apiAuthenticationAccepted": true,
+          "readGatewayIntegrationAccepted": true,
+          "restartAccepted": true,
+          "fixtureDataSurvivedRestart": true,
+          "duplicateWriterRefused": true,
+          "wrongGenesisRejected": true,
+          "coreCookieAbsent": true,
+          "rawRpcNotReachable": true,
+          "publicationRouteAbsent": true,
+          "unsynchronizedProtectionRefused": true,
+          "coreAndGatewayRestartAccepted": true,
+          "cleanStopExitCode": 0,
+          "nativeCliVersion": "0.1.1"
+        }
+      },
+      "fixtureCleanupComplete": true,
+      "cleanupErrors": []
+    }
+  },
+  "productionServicesStarted": false,
+  "operationalDataMounted": false,
+  "peerNetworkingEnabled": false,
+  "macWebsiteConnected": false,
+  "appsInstalled": false,
+  "catalogStarted": false,
+  "publicReleaseAccepted": false,
+  "fullUmbrelInstallationAccepted": false,
+  "realChainParityAccepted": false
+}

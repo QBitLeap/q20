@@ -1,0 +1,61 @@
+name: Accepted Umbrel image release
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the exact owner-accepted image after integration passes
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: q20-umbrel-release
+  cancel-in-progress: false
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - run: python scripts/build_crypto.py
+      - run: python -m unittest discover -s tests -v
+      - run: node --test checks/dashboard.test.cjs
+      - name: Download the pinned previously tested native artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p .release/native
+          gh run view 43145709674 --repo "$GITHUB_REPOSITORY" --json headSha,conclusion > .release/native-run.json
+          python -c "import json; x=json.load(open('.release/native-run.json')); assert x['headSha']=='e675c2ae85d9100f705e6f448bac42180dc95ae0' and x['conclusion']=='success'"
+          gh run download 43145709674 --repo "$GITHUB_REPOSITORY" --name q20-umbrel-amd64 --dir .release/native
+      - name: Verify native archive, exact image and CLI version
+        run: python scripts/release_native.py .release/native/q20-0.1.1-umbrel-amd64-image.tar.gz --output .release/prepared-image.json
+      - name: Test the exact image against published Core and read gateway
+        run: python checks/umbrel_integration.py --output .release/integration.json
+      - name: Login only for the requested publication
+        if: inputs.publish
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish accepted image
+        if: inputs.publish
+        run: python scripts/release_native.py .release/native/q20-0.1.1-umbrel-amd64-image.tar.gz --output .release/published-images.json --publish
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: q20-image-release
+          path: .release/*.json
+          if-no-files-found: error

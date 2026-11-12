@@ -9,11 +9,26 @@ JSON syntax from protocol validity, and maintains address balances and bound
 listing outputs in block order. It owns its index and follows a selected Qbit
 Core. It holds no wallet keys and does not sign or broadcast transactions.
 
+## Downloads
+
+| Platform | q20 0.1.1 |
+| --- | --- |
+| macOS | [Apple silicon](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-macos-arm64.tar.gz) · [Intel](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-macos-x64.tar.gz) |
+| Windows | [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-windows-x64.zip) |
+| Linux | [ARM64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-linux-arm64.tar.gz) · [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-linux-x64.tar.gz) |
+| Umbrel | [QBitLeap community app store](https://github.com/QBitLeap/umbrel-app-store) · Mainnet package |
+
+Use the release checksums before running downloaded artifacts. Native package
+checks, isolated Core integration, managed installation and real-chain parity
+are recorded separately in the [validation findings](docs/validation/README.md).
+
 ## Current acceptance
 
-The initial implementation is under validation. Unit/fixture and native package
-checks are recorded separately from real-chain parity and managed Umbrel
-installation. A successful build does not establish either of those latter two.
+The 0.1.1 native suite passed macOS ARM64/x64, Windows x64, Linux ARM64/x64
+and Umbrel amd64 builds. The exact Umbrel image also passed the owner-run real
+Core/read-gateway fixture, including auth, isolation, restart and cleanup. See
+[validation findings](docs/validation/README.md). Managed Umbrel installation
+and real-chain replay parity remain separate acceptance checks.
 Do not rely on q20 alone to approve real token purchases until replay parity has
 been checked against an independent implementation.
 

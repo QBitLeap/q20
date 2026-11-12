@@ -1,6 +1,7 @@
 """Prepare a standalone Umbrel candidate with its own data, API and Core dependency."""
 
 import argparse
+import base64
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -10,7 +11,7 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def package(destination, image, app_id="qbitleap-q20-main", core_id="qbitleap-core-main", port=8790):
+def package(destination, image, app_id="qbitleap-q20-main", core_id="qbitleap-core-main", port=8790, *, private=False):
     for value in (app_id, core_id):
         if re.fullmatch(r"[a-z][a-z0-9-]{2,45}", value) is None:
             raise ValueError("Invalid app ID")
@@ -41,9 +42,12 @@ def package(destination, image, app_id="qbitleap-q20-main", core_id="qbitleap-co
                 "support": "https://github.com/QBitLeap/q20/issues", "website": "https://qbitleap.com",
                 "dependencies": [core_id], "storage": {"dataRoot": "data"}, "port": port,
                 "path": "", "gallery": [], "submitter": "QBitLeap",
-                "releaseNotes": "Initial q20 candidate. Independent native validation required before release.",
+                "releaseNotes": "Initial q20 0.1.1. Native platform and isolated Core/gateway lifecycle checks passed. Starts Mainnet indexing automatically. Experimental: managed installation and real-chain replay parity are separate checks.",
                 "icon": "https://raw.githubusercontent.com/QBitLeap/q20/main/icon.svg"}
     compose = {"services": {"app_proxy": {"environment": {"APP_HOST": app_id + "_q20_1", "APP_PORT": 8080}}, "q20": service}}
+    if private:
+        manifest['icon']='data:image/svg+xml;base64,'+base64.b64encode((ROOT/'icon.svg').read_bytes()).decode()
+        manifest['repo']=manifest['support']=''
     destination.mkdir(parents=True)
     (destination / "data/index").mkdir(parents=True)
     (destination / "data/index/.gitkeep").write_text("")
@@ -51,7 +55,7 @@ def package(destination, image, app_id="qbitleap-q20-main", core_id="qbitleap-co
         (destination / name).write_text(json.dumps(value, indent=2) + "\n")
     exports = (f'export {prefix}_API_URL="http://{app_id}_q20_1:8080/v1/"\n'
                f'export {prefix}_API_USER="reader"\n'
-               f'export {prefix}_API_TOKEN="$(derive_entropy "app-{app_id}-read-api")"\n')
+               f'export {prefix}_API_TOKEN="$(derive_entropy "app-{app_id}-seed-read-api")"\n')
     (destination / "exports.sh").write_text(exports)
     shutil.copyfile(ROOT / "icon.svg", destination / "icon.svg")
     receipt = {"app": app_id, "network": "mainnet", "image": image, "installed": False,
@@ -69,5 +73,6 @@ if __name__ == "__main__":
     parser.add_argument("--app-id", default="qbitleap-q20-main")
     parser.add_argument("--core-id", default="qbitleap-core-main")
     parser.add_argument("--port", type=int, default=8790)
+    parser.add_argument("--private", action="store_true")
     args = parser.parse_args()
-    print(json.dumps(package(args.destination, args.image, args.app_id, args.core_id, args.port), indent=2))
+    print(json.dumps(package(args.destination, args.image, args.app_id, args.core_id, args.port, private=args.private), indent=2))
