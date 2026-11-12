@@ -2,6 +2,7 @@
 
 import argparse
 from hashlib import sha256
+import importlib.metadata
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import sysconfig
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +47,17 @@ def package(output):
             shutil.copyfile(ROOT / name, bundle / name)
         shutil.copytree(ROOT / "third_party", bundle / "third_party-licenses",
                         ignore=shutil.ignore_patterns("*.c", "*.h", "MANIFEST", "UPSTREAM.md", "source-manifest.json"))
+        runtime_licenses = bundle / "runtime-licenses"
+        runtime_licenses.mkdir()
+        candidates = [Path(sysconfig.get_path("stdlib")) / "LICENSE.txt",
+                      Path(sys.base_prefix) / "LICENSE.txt", Path(sys.base_prefix) / "LICENSE"]
+        python_license = next((p for p in candidates if p.is_file()), None)
+        if python_license is None:
+            raise ValueError("The bundled Python runtime's license is missing")
+        shutil.copyfile(python_license, runtime_licenses / "CPython-LICENSE.txt")
+        distribution = importlib.metadata.distribution("pyinstaller")
+        installer_license = next(p for p in distribution.files if str(p).replace("\\", "/").endswith("/licenses/COPYING.txt"))
+        shutil.copyfile(distribution.locate_file(installer_license), runtime_licenses / "PyInstaller-COPYING.txt")
         shutil.copyfile(icon, bundle / "icon.png")
         shutil.copyfile(ROOT / "assets/platform-icons" / (system + "-testnet4.png"), bundle / "icon-testnet4.png")
         shutil.copyfile(ROOT / "assets/icon-overlays/NOTICE.md", bundle / "ICON-NOTICE.md")
@@ -61,6 +74,8 @@ def package(output):
             raise ValueError("Packaged parser failed its smoke check")
         process_receipt = smoke([str(executable)])
         receipt = {"version": __version__, "os": system, "architecture": architecture,
+                   "python": sys.version.split()[0], "pyinstaller": distribution.version,
+                   "runtimeLicensesIncluded": True,
                    "archive": archive.name, "sha256": sha256(archive.read_bytes()).hexdigest(),
                    "nativePackagingSmokePassed": True, "liveChainParityAccepted": False,
                    "testnet4RulesAccepted": False, "coreStarted": False, "transactionsBroadcast": False}

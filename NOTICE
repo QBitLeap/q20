@@ -15,3 +15,9 @@ retained in tests/fixtures/pqc-vectors.json.
 Platform logos retain their original notices in assets/icon-overlays/NOTICE.md.
 The q20 mark is green (#00FF00), matching the Core artwork's bright highlights,
 on black, with italic {q20} lettering converted to vector outlines.
+
+Desktop archives retain the installed CPython license and PyInstaller's license
+with its bootloader exception under runtime-licenses/. OpenSSL 3 (Apache 2.0)
+and libffi (MIT) license texts are retained in third_party/runtime-licenses/.
+Source references: https://github.com/openssl/openssl (openssl-3.0.0/LICENSE.txt)
+and https://github.com/libffi/libffi (v3.4.6/LICENSE).
