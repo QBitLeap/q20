@@ -376,6 +376,25 @@ class LedgerTests(unittest.TestCase):
         self.add(transaction(4, record("mint", tkt=ticket), outputs=[coin(owner(3), 3000)]))
         self.assertEqual(self.event(4)["reason"], "mint-ticket-used")
 
+    def test_large_token_balances_survive_mint_transfer_and_undo(self):
+        value = "9"*5000
+        self.opened(max=value, lim=value)
+        self.add(transaction(2, record("mint", amt=value)))
+        self.assertEqual(self.index.get("token", "TEST")["minted"], value)
+        before = self.index.state_digest()
+        self.add(transaction(3, record("transfer", amt=value)))
+        self.assertEqual(self.index.get("balance", address(owner(2), "qb")+":TEST"), value)
+        self.index.rollback()
+        self.assertEqual(self.index.state_digest(), before)
+
+    def test_unrelated_artwork_is_not_duplicated_in_token_index(self):
+        self.add(transaction(1, raw=b"\xff"*100000))
+        event = self.event(1)
+        self.assertEqual(event["classification"], "invalid-utf8")
+        self.assertEqual(event["payloadBytes"], 100000)
+        self.assertNotIn("payloadHex", event)
+        self.assertEqual(len(event["payloadSha256"]), 64)
+
 
 if __name__ == "__main__":
     unittest.main()

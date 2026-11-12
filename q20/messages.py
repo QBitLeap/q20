@@ -1,9 +1,9 @@
 """Decode data, never execute it. JSON syntax, schema and ledger validity differ."""
 
 from dataclasses import dataclass
-from decimal import Decimal
-import json
 import re
+
+from .json_data import loads, amount
 
 
 class Incomplete(RuntimeError):
@@ -13,10 +13,7 @@ class Incomplete(RuntimeError):
 def integer(value):
     if type(value) is not str or re.fullmatch(r"(?:0|[1-9][0-9]*)", value) is None:
         return None
-    try:
-        return int(value)
-    except ValueError as exc:
-        raise Incomplete("Integer exceeds this Python runtime's configured conversion budget") from exc
+    return amount(value)
 
 
 def single_push(script):
@@ -62,25 +59,8 @@ def decode(payload, rules, height):
         text = payload.decode("utf-8", errors="strict")
     except UnicodeDecodeError:
         return Message("invalid-utf8", payload=payload)
-    duplicates = False
-
-    def pairs(items):
-        nonlocal duplicates
-        result = {}
-        for key, value in items:
-            duplicates |= key in result
-            result[key] = value
-        return result
-
-    def constant(_):
-        raise ValueError("Non-JSON numeric constant")
-
     try:
-        # Decimal preserves numeric JSON values without converting them into strings.
-        record = json.loads(text, object_pairs_hook=pairs, parse_int=Decimal,
-                            parse_float=Decimal, parse_constant=constant)
-    except RecursionError as exc:
-        raise Incomplete("JSON nesting exceeds this runtime's parsing budget") from exc
+        record, duplicates = loads(text)
     except ValueError:
         return Message("invalid-json", payload=payload)
     result = Message("other-json", record=None, duplicates=duplicates, payload=payload)

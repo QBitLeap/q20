@@ -15,6 +15,7 @@ from urllib.request import ProxyHandler, build_opener
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from q20.rules import Rules
+from q20.http import Server
 
 
 def smoke(command, library=None):
@@ -48,7 +49,7 @@ def smoke(command, library=None):
             self.end_headers()
             self.wfile.write(body)
 
-    server = HTTPServer(("127.0.0.1", 0), Fixture)
+    server = Server(("127.0.0.1", 0), Fixture)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     with socket.socket() as sock:

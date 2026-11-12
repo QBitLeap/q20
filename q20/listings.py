@@ -48,11 +48,12 @@ def terms(message, seller, rules, height):
             return None
     if price + (fee or 0) + (330 if anchor else 0) > MAX_MONEY:
         return None
+    keys = {"v", "price", "fee", "feeAddress", "salt", "exp"} | ({"lots", "anchor"} if version == "5" else set())
     return {"version": version, "tick": r["tick"], "amount": r["amt"], "seller": seller,
             "price": str(price), "fee": str(fee) if fee is not None else None,
             "feeAddress": value.get("feeAddress") if fee is not None else None,
             "salt": salt, "exp": expiry, "lots": lots, "anchor": anchor,
-            "list": value}
+            "list": {k: v for k, v in value.items() if k in keys}}
 
 
 def buy_outputs(terms, rules, lots=1, remaining=None):

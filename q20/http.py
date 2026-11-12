@@ -5,7 +5,7 @@ import hmac
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
-from socketserver import ThreadingMixIn
+from socketserver import TCPServer, ThreadingMixIn
 import threading
 from urllib.parse import parse_qs, unquote, urlsplit
 
@@ -23,6 +23,13 @@ class Server(ThreadingMixIn, HTTPServer):
     def __init__(self, address, handler):
         self.slots = threading.BoundedSemaphore(8)
         super().__init__(address, handler)
+
+    def server_bind(self):
+        # HTTPServer's reverse lookup can block local startup on DNS configuration.
+        # No q20 operation needs a PTR record for its explicit listening address.
+        TCPServer.server_bind(self)
+        self.server_name = self.server_address[0]
+        self.server_port = self.server_address[1]
 
     def process_request(self, request, address):
         if not self.slots.acquire(False):

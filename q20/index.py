@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 
 from . import listings, tickets
+from .json_data import amount as number, amount_text
 from .messages import Incomplete, discover
 from .wire import address, hash_id, output, p2mr, witness
 
@@ -81,13 +82,13 @@ class Index:
             "SELECT key,value FROM state WHERE kind=? ORDER BY key", (kind,))]
 
     def balance(self, owner, tick):
-        return int(self.get("balance", owner + ":" + tick, "0"))
+        return number(self.get("balance", owner + ":" + tick, "0"))
 
     def credit(self, owner, tick, amount):
         updated = self.balance(owner, tick) + amount
         if updated < 0:
             raise Incomplete("Ledger attempted a negative balance")
-        self.put("balance", owner + ":" + tick, str(updated) if updated else None)
+        self.put("balance", owner + ":" + tick, amount_text(updated) if updated else None)
 
     def state_digest(self):
         # q20's own digest format; not the marketplace's undocumented digest serialization.
@@ -203,7 +204,7 @@ class Index:
                         sold, recipient, rest, via = listings.release(
                             coin, input_index, tx, outputs, prevouts, self.rules, height)
                         t = coin["terms"]
-                        per_lot = int(t["amount"]) // t["lots"]
+                        per_lot = number(t["amount"]) // t["lots"]
                         self.credit(recipient, t["tick"], sold * per_lot)
                         self.put("bound", points[input_index], None)
                         extra = {}
@@ -216,7 +217,7 @@ class Index:
                             self.credit(t["seller"], t["tick"], leftover * per_lot)
                             extra["back"] = leftover
                         event({"op": "release", "valid": True, "sender": coin["address"], "receiver": recipient,
-                               "tick": t["tick"], "amt": str(sold * per_lot), "lots": sold, "via": via,
+                               "tick": t["tick"], "amt": amount_text(sold * per_lot), "lots": sold, "via": via,
                                "outpoint": points[input_index], **extra})
                         if leftover and rest is not None:
                             point = f"{txid}:{rest}"
@@ -224,14 +225,19 @@ class Index:
                                        "address": address(outputs[rest].script, self.rules.value["hrp"])}
                             self.put("bound", point, updated)
                             event({"op": "rebind", "valid": True, "outpoint": point, "lots": leftover,
-                                   "tick": t["tick"], "amt": str(leftover * per_lot)})
+                                   "tick": t["tick"], "amt": amount_text(leftover * per_lot)})
 
                     if data_index is not None:
                         result = {"op": "message", "classification": message.classification,
                                   "reason": message.reason, "valid": False,
-                                  "dataOutput": data_index, "payloadHex": message.payload.hex(),
-                                  "scriptHex": outputs[data_index].script.hex(),
+                                  "dataOutput": data_index, "payloadBytes": len(message.payload),
+                                  "payloadSha256": sha256(message.payload).hexdigest(),
+                                  "scriptSha256": sha256(outputs[data_index].script).hexdigest(),
                                   "duplicateKeys": message.duplicates}
+                        # q20 is not another artwork cache. Preserve recognized QBIT-20
+                        # evidence in full; unrelated binary/JSON has size/hash + chain identity.
+                        if message.record is not None:
+                            result.update(payloadHex=message.payload.hex(), scriptHex=outputs[data_index].script.hex())
                         if message.classification == "record":
                             first = previous(0)
                             sender = address(first.script, self.rules.value["hrp"]) if first is not None else None
@@ -275,14 +281,14 @@ class Index:
             return {"valid": True, "reason": "", "mintOpen": value["open"]}
         if token is None:
             return {"reason": "not-deployed"}
-        amount = int(r["amt"])
+        amount = number(r["amt"])
         if op == "mint":
             if height < token["open"]:
                 return {"reason": "mint-not-open"}
-            left = int(token["max"]) - int(token["minted"])
+            left = number(token["max"]) - number(token["minted"])
             if left <= 0:
                 return {"reason": "mint-finished"}
-            if amount != min(left, int(token["lim"])):
+            if amount != min(left, number(token["lim"])):
                 return {"reason": "wrong-mint-amount"}
             ticket = None
             if token["gate"] and height < token["open"] + token["gate_end"]:
@@ -316,7 +322,7 @@ class Index:
                     return {"reason": "bad-mint-ticket"}
                 self.put("nonce", tick + ":" + ticket["nonce"], ticket["exp"])
             self.credit(sender, tick, amount)
-            self.put("token", tick, {**token, "minted": str(int(token["minted"]) + amount)})
+            self.put("token", tick, {**token, "minted": amount_text(number(token["minted"]) + amount)})
             self.put("mintCount", count_key, count + 1)
             minted_addresses.add(sender)
             tick_mints[tick] = tick_mints.get(tick, 0) + 1

@@ -2,7 +2,9 @@ FROM python:3.13.5-slim-bookworm@sha256:a7cb177dc60dfa77b223192cd0d9e6ce1aac7cf9
 RUN apt-get update && apt-get install -y --no-install-recommends clang libc6-dev && rm -rf /var/lib/apt/lists/*
 WORKDIR /source
 COPY q20 q20
-COPY scripts/build_crypto.py scripts/build_crypto.py
+COPY scripts scripts
+COPY assets assets
+COPY icon.svg icon.svg
 COPY third_party third_party
 COPY tests tests
 RUN python scripts/build_crypto.py && python -m unittest discover -s tests -v

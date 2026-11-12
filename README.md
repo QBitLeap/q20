@@ -34,6 +34,8 @@ The [QBIT-20 specification](https://qrc.market/spec) and
 - Recognized records require exact case, permitted ticker length at that block,
   decimal **strings**, positive amounts and supported operations. Amounts use
   integers, never floating point. Unknown fields are ignored where required.
+  Iterative container parsing handles deeply nested unknown fields without a
+  Python recursion failure; large integer strings retain their exact value.
 - Ordinary JSON duplicate keys use the last decoded key; listing binds reject
   duplicates anywhere, including escaped spellings and nested objects. A failed
   v1-3 bind can still be an ordinary transfer. A failed transfer to the activated
@@ -104,7 +106,7 @@ per installation. No default password is published.
 | --- | --- |
 | `GET /status` | Dashboard counts, network, height and last observed status |
 | `GET /v1/status` | Authenticated status |
-| `GET /v1/messages?limit=100&offset=0` | Classification, reason, raw payload, transaction and block identity |
+| `GET /v1/messages?limit=100&offset=0` | Classification, reason, size/hash and transaction/block identity; full raw payload for recognized QBIT-20 records |
 | `GET /v1/tokens` | Token deploys, mint limits and minted amounts |
 | `GET /v1/balances/<address>` | Address balances at the returned snapshot height |
 | `GET /v1/bound` | Current bound listing outputs and their original terms |
