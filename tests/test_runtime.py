@@ -6,7 +6,9 @@ import tempfile
 import threading
 import unittest
 from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from urllib.request import Request, ProxyHandler, build_opener
+
+urlopen = build_opener(ProxyHandler({})).open
 
 from q20.http import Server, handler
 from q20.index import Index

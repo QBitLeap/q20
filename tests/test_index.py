@@ -331,6 +331,51 @@ class LedgerTests(unittest.TestCase):
         self.index.rollback()
         self.assertIsNone(self.index.get("nonce", "TEST:" + "01" * 8))
 
+    def test_malformed_listing_fields_fall_back_without_crashing(self):
+        self.funded()
+        for n, invalid in enumerate(({}, [], None, 2, True, "unknown"), 10):
+            tx = transaction(n, record("transfer", bind="1", list={"v": invalid}), destination=1)
+            self.add(tx)
+            self.assertTrue(self.event(n)["valid"])
+            self.assertEqual(self.index.balance(address(owner(1), "qb"), "TEST"), 100)
+
+    def test_mint_conservation_through_transfers_and_rollback(self):
+        import random
+        self.funded()
+        rng = random.Random(20)
+        for n in range(100, 150):
+            sender, recipient = rng.randrange(1, 6), rng.randrange(1, 6)
+            amount = str(rng.randrange(1, 101))
+            before = self.index.state_digest()
+            self.add(transaction(n, record("transfer", amt=amount), sender=sender, destination=recipient))
+            balances = sum(int(value) for _, value in self.index.rows("balance"))
+            self.assertEqual(balances, 100)
+            if n % 7 == 0:
+                self.index.rollback()
+                self.assertEqual(self.index.state_digest(), before)
+
+    def test_late_bind_is_still_bound(self):
+        self.funded()
+        r = record("transfer", bind="1", list={"v":"3", "price":"9000", "salt":"00"*16, "exp":"1"})
+        m = decode(json.dumps(r).encode(), self.rules, self.index.tip[0]+1)
+        t = listings.terms(m, address(owner(1), "qb"), self.rules, self.index.tip[0]+1)
+        script = listings.listing_script(t, self.rules)
+        self.add(transaction(3, r, outputs=[coin(script, 50000)]))
+        self.assertIsNotNone(self.index.get("bound", point(3)+":1"))
+
+    def test_nonce_and_fee_failures_do_not_occupy_mint_slots(self):
+        self.add(transaction(1, record(gate="11"*32, gate_end="10")))
+        signature = base64.urlsafe_b64encode(bytes(3680)).decode().rstrip("=")
+        payee = address(owner(3), "qb")
+        ticket = f"10.{'01'*8}.3000.{payee}.{signature}"
+        self.index.verify = lambda *args: True
+        self.add(transaction(2, record("mint", tkt=ticket)),
+                 transaction(3, record("mint", tkt=ticket), outputs=[coin(owner(3), 3000)]))
+        self.assertEqual(self.event(2)["reason"], "mint-fee-unpaid")
+        self.assertTrue(self.event(3)["valid"])
+        self.add(transaction(4, record("mint", tkt=ticket), outputs=[coin(owner(3), 3000)]))
+        self.assertEqual(self.event(4)["reason"], "mint-ticket-used")
+
 
 if __name__ == "__main__":
     unittest.main()

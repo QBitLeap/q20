@@ -1,2 +1,2 @@
 # Vendored source is retained byte-for-byte against its cryptographic manifest.
-third_party/** -whitespace
+third_party/** -text -whitespace

@@ -10,7 +10,7 @@ import sys
 import tempfile
 import threading
 import time
-from urllib.request import urlopen
+from urllib.request import ProxyHandler, build_opener
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -18,6 +18,7 @@ from q20.rules import Rules
 
 
 def smoke(command, library=None):
+    opener = build_opener(ProxyHandler({}))
     rules = Rules.load()
     genesis = rules.value["genesis"]
     tx = {"txid": "a" * 64, "version": 2, "locktime": 0, "vin": [{"coinbase": "00"}],
@@ -66,7 +67,7 @@ def smoke(command, library=None):
                     if process.poll() is not None:
                         raise AssertionError(process.communicate()[1].decode())
                     try:
-                        with urlopen(f"http://127.0.0.1:{port}/status", timeout=1) as response:
+                        with opener.open(f"http://127.0.0.1:{port}/status", timeout=1) as response:
                             status = json.load(response)
                         if status.get("observedSynchronized"):
                             break
@@ -74,10 +75,10 @@ def smoke(command, library=None):
                         pass
                     time.sleep(0.1)
                 else:
-                    raise AssertionError("Packaged index did not reach its synthetic tip")
-                with urlopen(f"http://127.0.0.1:{port}/", timeout=2) as response:
+                    raise AssertionError("Packaged index did not reach its synthetic tip; observed=" + repr(locals().get("status")) + "; calls=" + repr(calls))
+                with opener.open(f"http://127.0.0.1:{port}/", timeout=2) as response:
                     assert b"YOUR QBIT-20 INDEXER" in response.read()
-                with urlopen(f"http://127.0.0.1:{port}/icon.svg", timeout=2) as response:
+                with opener.open(f"http://127.0.0.1:{port}/icon.svg", timeout=2) as response:
                     assert b"<path" in response.read()
                 assert calls.count("getblock") == 1
             finally:
