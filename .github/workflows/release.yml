@@ -57,5 +57,6 @@ jobs:
         if: always()
         with:
           name: q20-image-release
+          include-hidden-files: true
           path: .release/*.json
           if-no-files-found: error
