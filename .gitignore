@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+*.spec
+*.sqlite*
+*.cookie
+.env
+.DS_Store
+q20/_native/

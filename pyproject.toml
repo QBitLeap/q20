@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "q20"
+version = "0.1.1"
+description = "Independent QBIT-20 message, balance and bound-output indexer"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+dependencies = []
+
+[project.scripts]
+q20 = "q20.cli:main"
+
+[tool.setuptools.package-data]
+q20 = ["static/*", "rules/*.json"]

@@ -1,0 +1,68 @@
+name: Desktop and Umbrel checks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: macos-15, target: macos-arm64}
+          - {runner: macos-15-intel, target: macos-x64}
+          - {runner: windows-2025, target: windows-x64}
+          - {runner: ubuntu-24.04, target: linux-x64}
+          - {runner: ubuntu-24.04-arm, target: linux-arm64}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - run: python -m pip install PyInstaller==6.20.0
+      - run: node --test checks/dashboard.test.cjs
+      - if: runner.os != 'Windows'
+        run: |
+          python scripts/build_crypto.py
+          python -m unittest discover -s tests -v
+          python checks/smoke_process.py
+          python scripts/package_desktop.py --output artifacts
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installation = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          Import-Module "$installation\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          python scripts/build_crypto.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python checks/smoke_process.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/package_desktop.py --output artifacts
+          exit $LASTEXITCODE
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: q20-${{ matrix.target }}
+          path: artifacts/*
+          if-no-files-found: error
+  umbrel:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: docker build --platform linux/amd64 -t q20-native:test .
+      - run: |
+          mkdir -p artifacts
+          docker run --rm --network none q20-native:test --version
+          docker save q20-native:test | gzip > artifacts/q20-0.1.1-umbrel-amd64-image.tar.gz
+          sha256sum artifacts/* > artifacts/SHA256SUMS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: q20-umbrel-amd64
+          path: artifacts/*
+          if-no-files-found: error

@@ -1,0 +1,21 @@
+{
+  "id": "q20-qbit20-v1.2-listings-v5r2-20261111",
+  "network": "mainnet",
+  "coreChain": "main",
+  "genesis": "0000000000004d60aa5d46013991d0a0e2995d89ee98e53068ae196d763e79f2",
+  "hrp": "qb",
+  "heights": {
+    "bind": 154100,
+    "bind2": 157415,
+    "bind3": 158204,
+    "gate": 160500,
+    "bind5": 162300,
+    "buyTicket": 163900,
+    "fastGate": 164200,
+    "feeTicket": 164201,
+    "threeTick": 167000,
+    "addressMints": 172500
+  },
+  "listingsV5Rule": 2,
+  "sources": ["https://qrc.market/spec", "https://qrc.market/spec/listings", "https://qrc.market/api/v1/status"]
+}

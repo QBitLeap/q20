@@ -1,0 +1,17 @@
+q20 application code: Copyright 2026 QBitLeap contributors, MIT license.
+
+QBIT-20 is a separate, experimental indexing convention. q20 is an independent
+implementation, not the reference marketplace. Public rules are documented at
+https://qrc.market/spec and https://qrc.market/spec/listings. The bundle and
+status observation used to pin the initial rules are recorded in
+dependencies.lock.json. The marketplace's scripts are not included or executed.
+
+The bundled Qbit bounded30 verification library is built from unmodified,
+hash-verified Qbit-Org/qbit-libbitcoinpqc sources distributed in @qbit-oss/pqc
+0.1.1. Its MIT and SPHINCS+ notices are retained under third_party/.
+The public test vectors originate from Qbit Core v1.0.0; their provenance is
+retained in tests/fixtures/pqc-vectors.json.
+
+Platform logos retain their original notices in assets/icon-overlays/NOTICE.md.
+The q20 mark is green (#00FF00), matching the Core artwork's bright highlights,
+on black, with italic {q20} lettering converted to vector outlines.

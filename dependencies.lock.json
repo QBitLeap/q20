@@ -1,0 +1,19 @@
+{
+  "pqc": {
+    "url": "https://registry.npmjs.org/@qbit-oss/pqc/-/pqc-0.1.1.tgz",
+    "integrity": "sha512-+p7hTxDvoRyUTlLifTfkRDuRt6+TO/X7vHMqN7w2XYSTpQGRkZopmQaCdYq2N2WZMtNF9sTAGmBCLgfvkCOfTA==",
+    "upstream": "https://github.com/Qbit-Org/qbit-libbitcoinpqc",
+    "commit": "edcea6cb89941fd60c8919eee74ec490ec914489",
+    "algorithm": "SLH-DSA-SHA2-128s-bounded30"
+  },
+  "build": {"pyinstaller": "6.20.0", "python": "3.13"},
+  "protocolSources": {
+    "siteBundle": "https://qrc.market/assets/index-2mI8p6wW.js",
+    "siteBundleSha256": "f51928c317c578c02e67785ab56e3c09bb8be7697fd04effa5913ead599edbee",
+    "specification": "https://qrc.market/spec",
+    "listings": "https://qrc.market/spec/listings",
+    "observedIndexerVersion": "qbit20-market-indexer 0.3.0",
+    "observedHeight": 171555,
+    "observedHash": "0000000000000002d8a05870e28f2b337472fe0024a5e58380c39e034dc03c87"
+  }
+}

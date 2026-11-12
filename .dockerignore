@@ -1,0 +1,9 @@
+**/__pycache__
+q20/_native
+.git
+.venv
+dist
+build
+*.sqlite*
+*.cookie
+.env
