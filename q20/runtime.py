@@ -132,7 +132,7 @@ class Runtime:
         This only schedules sweep(). It cannot grant fresh protection: protection
         still proves the committed snapshot against Core independently.
         """
-        while not self.stop.wait(5):
+        while not self.stop.wait(20):
             info = self.core.call("getblockchaininfo", [])
             if (not isinstance(info, dict) or info.get("chain") != self.rules.value["coreChain"]
                     or type(info.get("blocks")) is not int or info["blocks"] < 0

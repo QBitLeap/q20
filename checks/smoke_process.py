@@ -91,7 +91,7 @@ def smoke(command, library=None):
                 assert calls.count("getblock") == 1
                 started = time.monotonic()
                 announced.set()
-                while time.monotonic() - started < 12:
+                while time.monotonic() - started < 35:
                     with opener.open(f"http://127.0.0.1:{port}/status", timeout=2) as response:
                         current = json.load(response)
                     if current.get("observedSynchronized") is True and current.get("indexHeight") == 1 and current.get("indexHash") == next_hash:

@@ -25,7 +25,7 @@ class TipWakeup(RuntimeTests):
     def test_idle_probes_are_one_rpc_with_zero_sql_or_block_reads(self):
         self.runtime.sweep(self.index);tip=self.index.tip;self.probe_core();self.core.calls.clear();trace=[];self.index.db.set_trace_callback(trace.append);changes=self.index.db.total_changes
         self.runtime.stop=ScriptedStop([False,False,True]);self.runtime.wait_for_tip_change(tip)
-        self.assertEqual(self.core.calls,[('getblockchaininfo',[])]*2);self.assertEqual(trace,[]);self.assertEqual(self.index.db.total_changes,changes);self.assertEqual(self.runtime.stop.delays,[5,5,5]);self.assertTrue(self.runtime.checkpoint()['observedSynchronized'])
+        self.assertEqual(self.core.calls,[('getblockchaininfo',[])]*2);self.assertEqual(trace,[]);self.assertEqual(self.index.db.total_changes,changes);self.assertEqual(self.runtime.stop.delays,[20,20,20]);self.assertTrue(self.runtime.checkpoint()['observedSynchronized'])
     def test_new_tip_invalidates_status_then_only_new_block_is_fetched(self):
         self.runtime.sweep(self.index);tip=self.index.tip;self.probe_core();self.core.calls.clear();new={'height':1,'hash':point(501),'previousblockhash':tip[1],'tx':[transaction(2,record(tick='FAST'))]}
         self.runtime.stop=ScriptedStop([lambda:self.core.blocks.append(new)]);self.runtime.wait_for_tip_change(tip)
