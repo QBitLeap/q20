@@ -2,7 +2,7 @@
 
 Independent QBIT-20 indexer for **[macOS](platforms/macos/README.md),
 [Windows](platforms/windows/README.md), [Linux](platforms/linux/README.md), and
-[Umbrel](platforms/umbrel/README.md)**. Source version 0.1.3; release validation in progress.
+[Umbrel](platforms/umbrel/README.md)**. Source version 0.1.3; native platform and isolated Umbrel checks passed.
 
 One engine examines the first OP_RETURN in every confirmed transaction, separates
 JSON syntax from protocol validity, and maintains address balances and bound
@@ -11,14 +11,14 @@ Core. It holds no wallet keys and does not sign or broadcast transactions.
 
 ## Downloads
 
-| Platform | q20 0.1.1 |
+| Platform | q20 0.1.3 |
 | --- | --- |
-| macOS | [Apple silicon](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-macos-arm64.tar.gz) · [Intel](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-macos-x64.tar.gz) |
-| Windows | [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-windows-x64.zip) |
-| Linux | [ARM64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-linux-arm64.tar.gz) · [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.1/q20-0.1.1-linux-x64.tar.gz) |
+| macOS | [Apple silicon](https://github.com/QBitLeap/q20/releases/download/v0.1.3/q20-0.1.3-macos-arm64.tar.gz) · [Intel](https://github.com/QBitLeap/q20/releases/download/v0.1.3/q20-0.1.3-macos-x64.tar.gz) |
+| Windows | [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.3/q20-0.1.3-windows-x64.zip) |
+| Linux | [ARM64](https://github.com/QBitLeap/q20/releases/download/v0.1.3/q20-0.1.3-linux-arm64.tar.gz) · [x64](https://github.com/QBitLeap/q20/releases/download/v0.1.3/q20-0.1.3-linux-x64.tar.gz) |
 | Umbrel | [QBitLeap community app store](https://github.com/QBitLeap/umbrel-app-store) · Mainnet package |
 
-For Umbrel, refresh the existing QBitLeap community store and install **q20 Indexer 0.1.1**.
+For Umbrel, refresh the existing QBitLeap community store and install **q20 Indexer 0.1.3**.
 Keep Qbit Core running; Mainnet indexing starts automatically.
 
 Use the release checksums before running downloaded artifacts. Native package
