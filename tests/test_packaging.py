@@ -37,7 +37,8 @@ class PackagingTests(unittest.TestCase):
             manifest=json.loads((destination/'umbrel-app.yml').read_text())
             self.assertTrue(manifest['icon'].startswith('data:image/svg+xml;base64,'))
             self.assertEqual((manifest['repo'],manifest['support']),('',''))
-            self.assertEqual(manifest['version'],'0.1.1')
+            from q20 import __version__
+            self.assertEqual(manifest['version'],__version__)
 
     def test_platform_marks_and_large_testnet_cones(self):
         svg = "{http://www.w3.org/2000/svg}"

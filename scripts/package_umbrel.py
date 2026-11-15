@@ -7,8 +7,11 @@ import json
 from pathlib import Path
 import re
 import shutil
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from q20 import __version__
 
 
 def package(destination, image, app_id="qbitleap-q20-main", core_id="qbitleap-core-main", port=8790, *, private=False):
@@ -35,14 +38,14 @@ def package(destination, image, app_id="qbitleap-q20-main", core_id="qbitleap-co
                "tmpfs": ["/tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777"],
                "healthcheck": {"test": ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8080/healthz',timeout=2).close()"],
                                "interval": "1m", "timeout": "5s", "retries": 3}}
-    manifest = {"manifestVersion": 2.0, "id": app_id, "name": "q20 Indexer", "version": "0.1.1",
+    manifest = {"manifestVersion": 2.0, "id": app_id, "name": "q20 Indexer", "version": __version__,
                 "tagline": "Independent QBIT-20 messages and token indexing", "category": "finance",
                 "description": "Index QBIT-20 JSON messages, balances and bound listing outputs using your Qbit Core. Starts indexing automatically. Includes a browser dashboard and authenticated read API.",
                 "developer": "QBitLeap", "repo": "https://github.com/QBitLeap/q20",
                 "support": "https://github.com/QBitLeap/q20/issues", "website": "https://qbitleap.com",
                 "dependencies": [core_id], "storage": {"dataRoot": "data"}, "port": port,
                 "path": "", "gallery": [], "submitter": "QBitLeap",
-                "releaseNotes": "Initial q20 0.1.1. Native platform and isolated Core/gateway lifecycle checks passed. Starts Mainnet indexing automatically. Experimental: managed installation and real-chain replay parity are separate checks.",
+                "releaseNotes": "Detects new blocks sooner without rescanning unchanged data.",
                 "icon": "https://raw.githubusercontent.com/QBitLeap/q20/main/icon.svg"}
     compose = {"services": {"app_proxy": {"environment": {"APP_HOST": app_id + "_q20_1", "APP_PORT": 8080}}, "q20": service}}
     if private:

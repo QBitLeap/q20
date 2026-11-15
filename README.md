@@ -2,7 +2,7 @@
 
 Independent QBIT-20 indexer for **[macOS](platforms/macos/README.md),
 [Windows](platforms/windows/README.md), [Linux](platforms/linux/README.md), and
-[Umbrel](platforms/umbrel/README.md)**. Version 0.1.1.
+[Umbrel](platforms/umbrel/README.md)**. Source version 0.1.2; release validation in progress.
 
 One engine examines the first OP_RETURN in every confirmed transaction, separates
 JSON syntax from protocol validity, and maintains address balances and bound
@@ -103,8 +103,11 @@ python3 -m q20 start --rpc-url http://127.0.0.1:18443 --cookie /path/to/core/.co
 Choose the actual loopback RPC endpoint and private cookie of your Core.
 q20 starts indexing automatically and serves its dashboard at
 `http://127.0.0.1:8790`. It does not start another Core or change its settings.
-At tip it checks once a minute, without re-reading old blocks or writing an
-unchanged database. The dashboard refresh defaults to one minute, accepts a
+The updated source checks Core’s tip every five seconds with one small RPC read.
+An unchanged tip triggers no block reads, ledger scans or database writes; a changed
+hash wakes verified catch-up, including same-height reorgs. Unavailable Core reads
+use bounded backoff and cannot authorize protection. Published 0.1.1 binaries retain
+their original polling until an updated artifact is installed. The dashboard refresh defaults to one minute, accepts a
 longer whole-minute interval, and pauses on hidden pages.
 
 ```sh

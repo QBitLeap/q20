@@ -26,6 +26,9 @@ def smoke(command, library=None):
           "vout": [{"value_bits": 0, "scriptPubKey": {"hex": "6a"}}]}
     block = {"height": 0, "hash": genesis, "tx": [tx]}
     calls = []
+    announced = threading.Event()
+    next_hash = "c" * 64
+    next_block = {"height":1,"hash":next_hash,"previousblockhash":genesis,"tx":[{**tx,"txid":"b"*64}]}
 
     class Fixture(BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -36,11 +39,15 @@ def smoke(command, library=None):
             method, params = request["method"], request["params"]
             calls.append(method)
             if method == "getblockchaininfo":
-                result = {"chain": "main", "blocks": 0, "headers": 0, "initialblockdownload": False}
+                result = {"chain": "main", "blocks":int(announced.is_set()), "headers":int(announced.is_set()), "bestblockhash":next_hash if announced.is_set() else genesis, "initialblockdownload": False}
             elif method == "getblockhash" and params == [0]:
                 result = genesis
+            elif method == "getblockhash" and params == [1] and announced.is_set():
+                result = next_hash
             elif method == "getblock" and params == [genesis, 3]:
                 result = block
+            elif method == "getblock" and params == [next_hash, 3] and announced.is_set():
+                result = next_block
             else:
                 raise AssertionError("Unexpected fixture RPC " + method)
             body = json.dumps({"id": request["id"], "result": result, "error": None}).encode()
@@ -82,6 +89,18 @@ def smoke(command, library=None):
                 with opener.open(f"http://127.0.0.1:{port}/icon.svg", timeout=2) as response:
                     assert b"<path" in response.read()
                 assert calls.count("getblock") == 1
+                started = time.monotonic()
+                announced.set()
+                while time.monotonic() - started < 12:
+                    with opener.open(f"http://127.0.0.1:{port}/status", timeout=2) as response:
+                        current = json.load(response)
+                    if current.get("observedSynchronized") is True and current.get("indexHeight") == 1 and current.get("indexHash") == next_hash:
+                        break
+                    time.sleep(0.1)
+                else:
+                    raise AssertionError("New tip was not indexed within the fast-poll smoke window")
+                catchup_seconds = time.monotonic() - started
+                assert calls.count("getblock") == 2
             finally:
                 process.terminate()
                 try:
@@ -97,7 +116,8 @@ def smoke(command, library=None):
         server.server_close()
         thread.join(5)
     return {"isolatedProcessPassed": True, "dashboardAccepted": True, "shutdownAccepted": True,
-            "nativeCoreStarted": False, "liveChainReplayAccepted": False}
+            "nativeCoreStarted": False, "liveChainReplayAccepted": False,
+            "newTipDetected": True, "newTipSeconds": round(catchup_seconds,3)}
 
 
 if __name__ == "__main__":

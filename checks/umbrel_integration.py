@@ -117,19 +117,23 @@ else:raise AssertionError('Wrong genesis accepted')
 
 
 def main():
-    global Q20
+    global Q20,CLI_VERSION
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image',default=ACCEPTED_IMAGE)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--expected-image-id',default=ACCEPTED_IMAGE)
+    parser.add_argument('--expected-cli-version',default=CLI_VERSION)
     args=parser.parse_args()
-    if args.image!=ACCEPTED_IMAGE and not re.fullmatch(r'ghcr.io/qbitleap/q20@sha256:[0-9a-f]{64}',args.image):raise SystemExit('Pinned accepted q20 image required')
+    if not re.fullmatch(r'sha256:[0-9a-f]{64}',args.expected_image_id) or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',args.expected_cli_version):raise SystemExit('Exact candidate image and CLI version required')
+    if args.image!=args.expected_image_id and not re.fullmatch(r'ghcr.io/qbitleap/q20@sha256:[0-9a-f]{64}',args.image):raise SystemExit('Pinned candidate q20 image required')
+    CLI_VERSION=args.expected_cli_version
     if args.output.exists() or args.output.is_symlink():raise SystemExit('New evidence output required')
     Q20=args.image;docker=Docker()
     for image in (CORE,SERVICES,Q20):docker.ensure_image(image)
     info=docker.inspect('image',Q20)
-    if info.get('Id')!=ACCEPTED_IMAGE or info.get('Architecture')!='amd64' or info.get('Os')!='linux':raise SystemExit('Image differs from owner-accepted native image')
+    if info.get('Id')!=args.expected_image_id or info.get('Architecture')!='amd64' or info.get('Os')!='linux':raise SystemExit('Image differs from owner-accepted native image')
     result=Q20Fixture(docker,{'core':CORE,'services':SERVICES,'q20':Q20},'main').run()
-    receipt={'passed':result['passed'],'network':'main','images':{'core':CORE,'services':SERVICES,'q20':Q20},'imageId':ACCEPTED_IMAGE,'networks':{'main':result},'productionServicesStarted':False,'operationalDataMounted':False,'peerNetworkingEnabled':False,'appsInstalled':False,'publicLiveRoutingAccepted':False,'realChainParityAccepted':False}
+    receipt={'passed':result['passed'],'network':'main','images':{'core':CORE,'services':SERVICES,'q20':Q20},'imageId':args.expected_image_id,'networks':{'main':result},'productionServicesStarted':False,'operationalDataMounted':False,'peerNetworkingEnabled':False,'appsInstalled':False,'publicLiveRoutingAccepted':False,'realChainParityAccepted':False}
     args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(receipt,indent=2)+'\n')
     print(json.dumps(receipt,indent=2));return 0 if receipt['passed'] else 1
 

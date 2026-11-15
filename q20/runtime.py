@@ -1,4 +1,4 @@
-"""Single-writer synchronization. At tip, check once per minute and do no rescans."""
+"""Single writer; cheap tip probes wake verified catch-up without idle rescans."""
 
 from contextlib import contextmanager
 import json
@@ -126,27 +126,60 @@ class Runtime:
             self.observed = state
         return state
 
+    def wait_for_tip_change(self, tip):
+        """Poll one cheap Core read; unchanged tips never query or write the ledger.
+
+        This only schedules sweep(). It cannot grant fresh protection: protection
+        still proves the committed snapshot against Core independently.
+        """
+        while not self.stop.wait(5):
+            info = self.core.call("getblockchaininfo", [])
+            if (not isinstance(info, dict) or info.get("chain") != self.rules.value["coreChain"]
+                    or type(info.get("blocks")) is not int or info["blocks"] < 0
+                    or type(info.get("headers")) is not int or info["headers"] < info["blocks"]
+                    or type(info.get("initialblockdownload")) is not bool):
+                raise Incomplete("Core tip identity is unavailable")
+            point = (info["blocks"], hash_id(info.get("bestblockhash")))
+            with self.mutex:
+                ready = (point == tip and info["headers"] == info["blocks"]
+                         and info["initialblockdownload"] is False
+                         and self.observed.get("observedSynchronized") is True
+                         and self.observed.get("available") is True)
+                if not ready:
+                    # Retain the actual committed index height/hash and rules.
+                    # Never label a new Core tip as already indexed.
+                    self.observed.update(observedSynchronized=False, nodeHeight=info["blocks"],
+                                         headers=info["headers"], message="Checking the new Core tip")
+                    return
+                self.observed.update(observedAt=int(time.time()), nodeHeight=info["blocks"],
+                                     headers=info["headers"])
+
     def run(self):
         with writer_lock(self.directory):
             if self.path.is_symlink():
                 raise ValueError("Linked index refused")
             index = Index(self.path, self.rules, self.verify)
             try:
+                failures = 0
                 while not self.stop.is_set():
                     try:
                         state = self.sweep(index)
                         print(json.dumps({"event": "q20-checkpoint", **state}), flush=True)
-                        # Continue catch-up immediately. A quiet tip sleeps a full minute.
+                        failures = 0
+                        # Catch-up remains immediate; idle checks fetch no blocks,
+                        # recalculate no balances/counts and write no database pages.
                         if state["indexHeight"] < state["nodeHeight"]:
                             continue
-                        self.stop.wait(60)
+                        self.wait_for_tip_change(index.tip)
                     except Incomplete as exc:
                         with self.mutex:
-                            self.observed = {"app": "q20", "version": __version__, "network": self.rules.network,
-                                             "available": False, "observedSynchronized": False,
-                                             "indexHeight": index.tip[0], "message": str(exc)}
+                            self.observed.update(app="q20", version=__version__, network=self.rules.network,
+                                                 rulesFingerprint=self.rules.fingerprint, available=False,
+                                                 observedSynchronized=False, indexHeight=index.tip[0],
+                                                 indexHash=index.tip[1], message=str(exc))
                         print(json.dumps({"event": "q20-waiting", **self.checkpoint()}), flush=True)
-                        self.stop.wait(60)
+                        failures += 1
+                        self.stop.wait(min(30, 5 * (2 ** min(failures - 1, 3))))
             finally:
                 index.close()
 
