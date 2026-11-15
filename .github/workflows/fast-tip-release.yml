@@ -67,8 +67,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view v0.1.2 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Version 0.1.2 already exists; preserve its published assets."
+          if gh release view v0.1.3 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Version 0.1.3 already exists; preserve its published assets."
             exit 1
           fi
       - name: Build and test source, crypto and real Core fixture
@@ -76,7 +76,7 @@ jobs:
           mkdir -p artifacts
           docker build --platform linux/amd64 --iidfile artifacts/image.iid --label org.opencontainers.image.revision="$GITHUB_SHA" --label org.opencontainers.image.source=https://github.com/QBitLeap/q20 .
           image=$(cat artifacts/image.iid)
-          python3 checks/umbrel_integration.py --image "$image" --expected-image-id "$image" --expected-cli-version 0.1.2 --output artifacts/integration.json
+          python3 checks/umbrel_integration.py --image "$image" --expected-image-id "$image" --expected-cli-version 0.1.3 --output artifacts/integration.json
           docker run --rm --network none --read-only --tmpfs /tmp:rw,nosuid,nodev,size=64m,mode=1777 --mount "type=bind,source=$PWD/checks,target=/opt/q20/checks,readonly" --entrypoint python "$image" /opt/q20/checks/smoke_process.py
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550
         with:
@@ -112,4 +112,4 @@ jobs:
           done
           gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name q20-fast-tip-umbrel --dir downloaded/umbrel
           python3 scripts/collect_update_release.py downloaded release-files
-          gh release create v0.1.2 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "q20 0.1.2" --notes "Faster new-block detection with no idle ledger scans. Preserves existing index data and protocol rules. Native platform and isolated Core integration checks passed; managed installation remains separate." release-files/*
+          gh release create v0.1.3 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "q20 0.1.3" --notes "Faster new-block detection with no idle ledger scans. Preserves existing index data and protocol rules. Native platform and isolated Core integration checks passed; managed installation remains separate." release-files/*

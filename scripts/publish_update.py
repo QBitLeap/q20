@@ -15,7 +15,7 @@ def publish(image,integration,output):
  with tempfile.TemporaryDirectory(prefix='q20-anonymous-') as directory:
   environment={**os.environ,'DOCKER_CONFIG':directory};run(['docker','pull',refs[0]],environment)
  if json.loads(run(['docker','image','inspect',refs[0]]))[0]['Id']!=image:raise ValueError('Anonymous digest pull differs')
- result=dict(version=__version__,sourceCommit=run(['git','rev-parse','HEAD']),imageId=image,imageReference=refs[0],anonymousPullAccepted=True,nativeIntegrationPassed=True,fixtureCleanupComplete=True,managedInstallationAccepted=False,liveChainParityAccepted=False,indexSchemaChanged=False,rulesChanged=False,tipPollSeconds=20,unchangedTipLedgerWrites=False)
+ result=dict(version=__version__,sourceCommit=run(['git','rev-parse','HEAD']),imageId=image,imageReference=refs[0],anonymousPullAccepted=True,nativeIntegrationPassed=True,fixtureCleanupComplete=True,managedInstallationAccepted=False,liveChainParityAccepted=False,indexSchemaChanged=False,rulesChanged=False,tipPollSeconds=5,unchangedTipLedgerWrites=False)
  Path(output).write_text(json.dumps(result,indent=2)+'\n');return result
 if __name__=='__main__':
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--image',required=True);p.add_argument('--integration',required=True);p.add_argument('--output',required=True);a=p.parse_args();print(json.dumps(publish(a.image,a.integration,a.output),indent=2))
